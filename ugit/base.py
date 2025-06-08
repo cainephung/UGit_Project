@@ -78,3 +78,9 @@ def is_ignored(path):
     parts = path.split(os.sep)
     return '.ugit' in parts or '.git' in parts
 
+def commit (message):
+    commit = f'tree {write_tree ()}\n'
+    commit += '\n'
+    commit += f'{message}\n'
+
+    return data.hash_object (commit.encode (), 'commit')
