@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import textwrap   
 
 from . import base
 from . import data
@@ -37,12 +38,14 @@ def parse_args ():
     commit_parser = commands.add_parser ('commit')
     commit_parser.set_defaults (func=commit)
     commit_parser.add_argument ('-m', '--message', required=True)
+    log_parser = commands.add_parser ('log')
+    log_parser.set_defaults (func=log)
 
     return parser.parse_args ()
 
 def commit (args):
     print (base.commit (args.message))
-    
+
 def init (args):
     data.init ()
     print (f'Initialized empty ugit repository in {os.getcwd()}/{data.GIT_DIR}')
@@ -64,3 +67,14 @@ def write_tree (args):
 
 def read_tree (args):
     base.read_tree (args.tree)
+
+def log (args):
+    oid = data.get_HEAD ()
+    while oid:
+        commit = base.get_commit (oid)
+
+        print (f'commit {oid}\n')
+        print (textwrap.indent (commit.message, '    '))
+        print ('')
+
+        oid = commit.parent
