@@ -8,10 +8,6 @@ def set_HEAD(oid):
         f.write(oid)
 
 
-def get_HEAD ():
-    if os.path.isfile (f'{GIT_DIR}/HEAD'):
-        with open (f'{GIT_DIR}/HEAD') as f:
-            return f.read ().strip ()
 def init ():
     os.makedirs (GIT_DIR)
     os.makedirs (f'{GIT_DIR}/objects')
@@ -35,3 +31,10 @@ def get_object (oid, expected='blob'):
     if expected is not None:
         assert type_ == expected, f'Expected {expected}, got {type_}'
     return content
+
+def get_HEAD():
+    head_path = f'{GIT_DIR}/HEAD'
+    if os.path.isfile(head_path):
+        with open(head_path) as f:
+            return f.read().strip()
+    return None

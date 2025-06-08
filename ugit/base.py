@@ -1,8 +1,9 @@
+import os
+from collections import namedtuple
 import itertools
 import operator
-import os
 from . import data
-from collections import namedtuple
+
 
 def write_tree (directory='.'):
     entries = []
@@ -33,7 +34,25 @@ def _iter_tree_entries (oid):
     for entry in tree.decode ().splitlines ():
         type_, oid, name = entry.split (' ', 2)
         yield type_, oid, name
+        
+Commit = namedtuple('Commit', ['tree', 'parent', 'message'])
 
+def get_commit(oid):
+    commit = data.get_object(oid, 'commit').decode()
+    lines = iter(commit.splitlines())
+
+    parent = None
+    for line in itertools.takewhile(operator.truth, lines):
+        key, value = line.split(' ', 1)
+        if key == 'tree':
+            tree = value
+        elif key == 'parent':
+            parent = value
+        else:
+            assert False, f'Unknown field {key}'
+
+    message = '\n'.join(lines)
+    return Commit(tree=tree, parent=parent, message=message)
 
 def get_tree (oid, base_path=''):
     result = {}
@@ -81,11 +100,6 @@ def is_ignored(path):
 
 def commit(message):
     commit = f'tree {write_tree()}\n'
-
-    HEAD = data.get_HEAD ()
-    if HEAD:
-        commit += f'parent {HEAD}\n'
-        
     commit += '\n'
     commit += f'{message}\n'
 
@@ -94,22 +108,3 @@ def commit(message):
 
     return oid
 
-Commit = namedtuple ('Commit', ['tree', 'parent', 'message'])
-
-
-def get_commit (oid):
-    parent = None
-
-    commit = data.get_object (oid, 'commit').decode ()
-    lines = iter (commit.splitlines ())
-    for line in itertools.takewhile (operator.truth, lines):
-        key, value = line.split (' ', 1)
-        if key == 'tree':
-            tree = value
-        elif key == 'parent':
-            parent = value
-        else:
-            assert False, f'Unknown field {key}'
-
-    message = '\n'.join (lines)
-    return Commit (tree=tree, parent=parent, message=message)
