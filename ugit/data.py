@@ -56,3 +56,11 @@ def update_ref(ref, oid):
     with open(path, 'w') as f:
         f.write(oid)
 
+def iter_refs():
+    refs = ['HEAD']
+    for root, _, filenames in os.walk(f'{GIT_DIR}/refs/'):
+        root = os.path.relpath(root, f'{GIT_DIR}/refs')
+        refs.extend(f'{root}/{name}' if root != '.' else name for name in filenames)
+
+    for refname in refs:
+        yield f'refs/{refname}' if refname != 'HEAD' else refname, get_ref(refname)
