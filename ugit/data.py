@@ -38,3 +38,21 @@ def get_HEAD():
         with open(head_path) as f:
             return f.read().strip()
     return None
+
+def get_ref(ref):
+    path = os.path.join(GIT_DIR, 'refs', ref) if ref != 'HEAD' else os.path.join(GIT_DIR, 'HEAD')
+    if os.path.isfile(path):
+        with open(path) as f:
+            return f.read().strip()
+    return None
+
+def update_ref(ref, oid):
+    if ref != 'HEAD':
+        os.makedirs(os.path.join(GIT_DIR, 'refs'), exist_ok=True)
+        path = os.path.join(GIT_DIR, 'refs', ref)
+    else:
+        path = os.path.join(GIT_DIR, 'HEAD')
+
+    with open(path, 'w') as f:
+        f.write(oid)
+

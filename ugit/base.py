@@ -1,7 +1,9 @@
-import os
-from collections import namedtuple
 import itertools
 import operator
+import os
+
+from collections import namedtuple
+
 from . import data
 
 
@@ -27,6 +29,7 @@ def write_tree (directory='.'):
                     in sorted (entries))
     return data.hash_object (tree.encode (), 'tree')
 
+
 def _iter_tree_entries (oid):
     if not oid:
         return
@@ -34,25 +37,7 @@ def _iter_tree_entries (oid):
     for entry in tree.decode ().splitlines ():
         type_, oid, name = entry.split (' ', 2)
         yield type_, oid, name
-        
-Commit = namedtuple('Commit', ['tree', 'parent', 'message'])
 
-def get_commit(oid):
-    commit = data.get_object(oid, 'commit').decode()
-    lines = iter(commit.splitlines())
-
-    parent = None
-    for line in itertools.takewhile(operator.truth, lines):
-        key, value = line.split(' ', 1)
-        if key == 'tree':
-            tree = value
-        elif key == 'parent':
-            parent = value
-        else:
-            assert False, f'Unknown field {key}'
-
-    message = '\n'.join(lines)
-    return Commit(tree=tree, parent=parent, message=message)
 
 def get_tree (oid, base_path=''):
     result = {}
@@ -67,6 +52,7 @@ def get_tree (oid, base_path=''):
         else:
             assert False, f'Unknown tree entry {type_}'
     return result
+
 
 def _empty_current_directory ():
     for root, dirnames, filenames in os.walk ('.', topdown=False):
@@ -86,6 +72,7 @@ def _empty_current_directory ():
                 # so it's OK
                 pass
 
+
 def read_tree (tree_oid):
     _empty_current_directory ()
     for path, oid in get_tree (tree_oid, base_path='./').items ():
@@ -94,17 +81,57 @@ def read_tree (tree_oid):
             f.write (data.get_object (oid))
 
 
-def is_ignored(path):
-    parts = path.split(os.sep)
-    return '.ugit' in parts or '.git' in parts
+def commit (message):
+    commit = f'tree {write_tree ()}\n'
 
-def commit(message):
-    commit = f'tree {write_tree()}\n'
+    HEAD = data.get_ref ('HEAD')
+    if HEAD:
+        commit += f'parent {HEAD}\n'
+
     commit += '\n'
     commit += f'{message}\n'
 
-    oid = data.hash_object(commit.encode(), 'commit')
-    data.set_HEAD(oid)
+    oid = data.hash_object (commit.encode (), 'commit')
+
+    data.update_ref ('HEAD', oid)
 
     return oid
 
+
+def checkout (oid):
+    commit = get_commit (oid)
+    read_tree (commit.tree)
+    data.update_ref ('HEAD', oid)
+
+
+def create_tag (name, oid):
+    # TODO Actually create the tag
+  
+    data.update_ref(name, oid)
+
+    pass
+
+
+Commit = namedtuple ('Commit', ['tree', 'parent', 'message'])
+
+
+def get_commit (oid):
+    parent = None
+
+    commit = data.get_object (oid, 'commit').decode ()
+    lines = iter (commit.splitlines ())
+    for line in itertools.takewhile (operator.truth, lines):
+        key, value = line.split (' ', 1)
+        if key == 'tree':
+            tree = value
+        elif key == 'parent':
+            parent = value
+        else:
+            assert False, f'Unknown field {key}'
+
+    message = '\n'.join (lines)
+    return Commit (tree=tree, parent=parent, message=message)
+
+
+def is_ignored (path):
+    return '.ugit' in path.split ('/')
