@@ -1,0 +1,17 @@
+digraph commits {
+"HEAD" [shape=note]
+"HEAD" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/try-refactoring" [shape=note]
+"refs/try-refactoring" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/mytag" [shape=note]
+"refs/mytag" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/tags/test" [shape=note]
+"refs/tags/test" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/tags/mytag" [shape=note]
+"refs/tags/mytag" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"92c453016d2a2d89fd52fba86b07c6deb17f0e95" [shape=box style=filled label="92c453016d"]
+"92c453016d2a2d89fd52fba86b07c6deb17f0e95" -> "48c8fcde1d7bfbfebe8cadbb0ae2fac00a9411a5"
+"48c8fcde1d7bfbfebe8cadbb0ae2fac00a9411a5" [shape=box style=filled label="48c8fcde1d"]
+"48c8fcde1d7bfbfebe8cadbb0ae2fac00a9411a5" -> "c839f4b07c1ecaf5bc3105c1af2e620be35e608f"
+"c839f4b07c1ecaf5bc3105c1af2e620be35e608f" [shape=box style=filled label="c839f4b07c"]
+}

@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import textwrap
+import subprocess
 
 from . import base
 from . import data
@@ -103,14 +104,28 @@ def tag (args):
     oid = args.oid or data.get_ref ('HEAD')
     base.create_tag (args.name, oid)
 
-def k (args):
-    oids = set ()
-    for refname, ref in data.iter_refs ():
-        print (refname, ref)
-        oids.add (ref)
+def k(args):
+    dot = 'digraph commits {\n'  # Start DOT graph
 
-    for oid in base.iter_commits_and_parents (oids):
-        commit = base.get_commit (oid)
-        print (oid)
+    oids = set()
+    for refname, ref in data.iter_refs():
+        dot += f'"{refname}" [shape=note]\n'           # Draw ref as note
+        dot += f'"{refname}" -> "{ref}"\n'             # Point ref to commit
+        oids.add(ref)
+
+    for oid in base.iter_commits_and_parents(oids):
+        commit = base.get_commit(oid)
+        dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
         if commit.parent:
-            print ('Parent', commit.parent)
+            dot += f'"{oid}" -> "{commit.parent}"\n'
+
+    dot += '}'
+
+    print(dot)  # Optional: debug print
+
+    # Visualize the graph using Graphviz's GTK viewer
+    with open('graph.dot', 'w') as f:
+        f.write(dot)
+
+    subprocess.run(['dot', '-Tpng', 'graph.dot', '-o', 'graph.png'])
+
