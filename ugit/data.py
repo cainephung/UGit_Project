@@ -40,11 +40,18 @@ def get_HEAD():
     return None
 
 def get_ref(ref):
-    path = os.path.join(GIT_DIR, 'refs', ref) if ref != 'HEAD' else os.path.join(GIT_DIR, 'HEAD')
-    if os.path.isfile(path):
-        with open(path) as f:
-            return f.read().strip()
-    return None
+    ref_path = f'{GIT_DIR}/{ref}'
+    value = None
+
+    if os.path.isfile(ref_path):
+        with open(ref_path) as f:
+            value = f.read().strip()
+
+    if value and value.startswith('ref:'):
+        return get_ref(value.split(':', 1)[1].strip())  # Recursively dereference
+
+    return value
+
 
 def update_ref(ref, oid):
     if ref == 'HEAD':
