@@ -1,11 +1,26 @@
 import itertools
 import operator
 import os
-
-from collections import namedtuple
-
+from collections import deque, namedtuple
 from . import data
 
+def get_oid(name):
+    if name == '@':
+        name = 'HEAD'
+
+    # Try resolving from multiple ref locations
+    refs_to_try = [
+        name,
+        f'refs/{name}',
+        f'refs/tags/{name}',
+        f'refs/heads/{name}',
+    ]
+
+    for ref in refs_to_try:
+        if data.get_ref(ref):
+            return data.get_ref(ref)
+
+    return name  # Assume it's a raw OID if no ref matched
 
 def write_tree (directory='.'):
     entries = []
@@ -111,6 +126,8 @@ def create_tag (name, oid):
 
     pass
 
+def create_branch (name, oid):
+    data.update_ref (f'refs/heads/{name}', oid)
 
 Commit = namedtuple ('Commit', ['tree', 'parent', 'message'])
 
@@ -137,15 +154,15 @@ def is_ignored (path):
     return '.ugit' in path.split ('/')
 
 def iter_commits_and_parents(oids):
-    oids = set(oids)
+    oids = deque (oids)
     visited = set()
 
     while oids:
-        oid = oids.pop()
+        oid = oids.popleft ()
         if not oid or oid in visited:
             continue
         visited.add(oid)
         yield oid
 
         commit = get_commit(oid)
-        oids.add(commit.parent)
+        oids.appendleft (commit.parent)

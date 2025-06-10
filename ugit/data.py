@@ -47,14 +47,15 @@ def get_ref(ref):
     return None
 
 def update_ref(ref, oid):
-    if ref != 'HEAD':
-        os.makedirs(os.path.join(GIT_DIR, 'refs'), exist_ok=True)
-        path = os.path.join(GIT_DIR, 'refs', ref)
-    else:
+    if ref == 'HEAD':
         path = os.path.join(GIT_DIR, 'HEAD')
+    else:
+        path = os.path.join(GIT_DIR, ref)  # use full path directly
+        os.makedirs(os.path.dirname(path), exist_ok=True)
 
     with open(path, 'w') as f:
         f.write(oid)
+
 
 def iter_refs():
     refs = ['HEAD']
