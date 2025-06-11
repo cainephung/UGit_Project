@@ -1,12 +1,13 @@
 import hashlib
 import os
-
+from collections import namedtuple
 
 GIT_DIR = '.ugit'
 def set_HEAD(oid):
     with open(f'{GIT_DIR}/HEAD', 'w') as f:
         f.write(oid)
 
+RefValue = namedtuple ('RefValue', ['symbolic', 'value'])
 
 def init ():
     os.makedirs (GIT_DIR)
@@ -50,19 +51,15 @@ def get_ref(ref):
     if value and value.startswith('ref:'):
         return get_ref(value.split(':', 1)[1].strip())  # Recursively dereference
 
-    return value
+    return RefValue (symbolic=False, value=value)
 
 
-def update_ref(ref, oid):
-    if ref == 'HEAD':
-        path = os.path.join(GIT_DIR, 'HEAD')
-    else:
-        path = os.path.join(GIT_DIR, ref)  # use full path directly
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    with open(path, 'w') as f:
-        f.write(oid)
-
+def update_ref (ref, value):
+    assert not value.symbolic
+    ref_path = f'{GIT_DIR}/{ref}'
+    os.makedirs (os.path.dirname (ref_path), exist_ok=True)
+    with open (ref_path, 'w') as f:
+        f.write (value.value)
 
 def iter_refs():
     refs = ['HEAD']
@@ -71,4 +68,9 @@ def iter_refs():
         refs.extend(f'{root}/{name}' if root != '.' else name for name in filenames)
 
     for refname in refs:
-        yield f'refs/{refname}' if refname != 'HEAD' else refname, get_ref(refname)
+        full_refname = f'refs/{refname}' if refname != 'HEAD' else 'HEAD'
+        ref_path = f'{GIT_DIR}/{full_refname}'
+        val = get_ref(full_refname)
+        print(f"[DEBUG] {full_refname} from {ref_path} => {val!r}")
+        yield full_refname, val
+

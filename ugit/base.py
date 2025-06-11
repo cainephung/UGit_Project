@@ -17,8 +17,8 @@ def get_oid(name):
     ]
 
     for ref in refs_to_try:
-        if data.get_ref(ref):
-            return data.get_ref(ref)
+        if data.get_ref (ref).value:
+            return data.get_ref (ref).value
 
     return name  # Assume it's a raw OID if no ref matched
 
@@ -99,7 +99,7 @@ def read_tree (tree_oid):
 def commit (message):
     commit = f'tree {write_tree ()}\n'
 
-    HEAD = data.get_ref ('HEAD')
+    HEAD = data.get_ref ('HEAD').value
     if HEAD:
         commit += f'parent {HEAD}\n'
 
@@ -108,7 +108,7 @@ def commit (message):
 
     oid = data.hash_object (commit.encode (), 'commit')
 
-    data.update_ref ('HEAD', oid)
+    data.update_ref ('HEAD', data.RefValue (symbolic=False, value=oid))
 
     return oid
 
@@ -116,18 +116,16 @@ def commit (message):
 def checkout (oid):
     commit = get_commit (oid)
     read_tree (commit.tree)
-    data.update_ref ('HEAD', oid)
+    data.update_ref ('HEAD', data.RefValue (symbolic=False, value=oid))
+
 
 
 def create_tag (name, oid):
-    # TODO Actually create the tag
-  
-    data.update_ref(name, oid)
-
+    data.update_ref (f'refs/tags/{name}', data.RefValue (symbolic=False, value=oid))
     pass
 
 def create_branch (name, oid):
-    data.update_ref (f'refs/heads/{name}', oid)
+    data.update_ref (f'refs/heads/{name}', data.RefValue (symbolic=False, value=oid))
 
 Commit = namedtuple ('Commit', ['tree', 'parent', 'message'])
 

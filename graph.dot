@@ -5,6 +5,12 @@ digraph commits {
 "refs/try-refactoring" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
 "refs/mytag" [shape=note]
 "refs/mytag" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/heads/mybranch" [shape=note]
+"refs/heads/mybranch" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/heads/testbranch" [shape=note]
+"refs/heads/testbranch" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
+"refs/heads/mybranch2" [shape=note]
+"refs/heads/mybranch2" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
 "refs/tags/test" [shape=note]
 "refs/tags/test" -> "92c453016d2a2d89fd52fba86b07c6deb17f0e95"
 "refs/tags/mytag" [shape=note]
